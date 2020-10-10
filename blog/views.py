@@ -58,3 +58,18 @@ class GetPost(DetailView):
         self.object.save()
         self.object.refresh_from_db()
         return context
+
+
+class Search(ListView):
+    paginate_by = 4
+    context_object_name = "posts"
+    template_name = 'blog/search.html'
+
+    def get_queryset(self):
+        return Post.objects.filter(title__icontains=self.request.GET.get('s'))
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        context['title'] = 'Результаты поиска'
+        context['s'] = f"s={self.request.GET.get('s')}&"
+        return context
