@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'debug_toolbar',
     'ckeditor',
+    'mptt',
     'blog.apps.BlogConfig',
     'testapp.apps.TestappConfig',
 ]
@@ -202,3 +203,6 @@ CACHES = {
         'LOCATION': os.path.join(BASE_DIR, 'django_cache'),
     }
 }
+
+# default is 10 pixels
+MPTT_ADMIN_LEVEL_INDENT = 20
