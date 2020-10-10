@@ -1,7 +1,7 @@
-from django.http import HttpResponse
-from django.views.generic import ListView
+from django.db.models import F
+from django.views.generic import ListView, DetailView
 
-from blog.models import Post, Category
+from blog.models import Post, Category, Tag
 
 
 class Home(ListView):
@@ -18,7 +18,7 @@ class Home(ListView):
 
 class PostsByCategory(ListView):
     context_object_name = 'posts'
-    paginate_by = 1
+    paginate_by = 4
     template_name = 'blog/index.html'
     allow_empty = False
 
@@ -31,5 +31,30 @@ class PostsByCategory(ListView):
         return context
 
 
-def demo_post(request, slug):
-    return HttpResponse(f"Post slug: {slug}")
+class PostsByTag(ListView):
+    context_object_name = 'posts'
+    paginate_by = 2
+    template_name = 'blog/index.html'
+    allow_empty = False
+
+    def get_queryset(self):
+        return Post.objects.filter(tags__slug__contains=self.kwargs['slug'])
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        context['title'] = 'Записи по тэгу ' + str(Tag.objects.get(slug=self.kwargs['slug']))
+        return context
+
+
+class GetPost(DetailView):
+    context_object_name = 'post'
+    model = Post
+    template_name = 'blog/single.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = Post.objects.get(slug=self.kwargs['slug'])
+        self.object.views = F('views') + 1
+        self.object.save()
+        self.object.refresh_from_db()
+        return context
